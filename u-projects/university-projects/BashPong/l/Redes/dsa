@@ -1,0 +1,1060 @@
+[1mdiff --git a/futbol b/futbol[m
+[1mindex 346352e..d62177c 100755[m
+Binary files a/futbol and b/futbol differ
+[1mdiff --git a/futbol.c b/futbol.c[m
+[1mindex 52ca3a2..dcaee3a 100644[m
+[1m--- a/futbol.c[m
+[1m+++ b/futbol.c[m
+[36m@@ -16,37 +16,35 @@[m
+ #include <netdb.h>[m
+ #include <pthread.h>[m
+ [m
+[32m+[m[32mstruct Juego{[m
+[32m+[m	[32mint x;[m
+[32m+[m	[32mint y;[m
+[32m+[m	[32mint M_L;[m
+[32m+[m	[32mint M_R;[m
+[32m+[m	[32mint lh1;[m
+[32m+[m	[32mint lh2;[m
+[32m+[m	[32mint lh3;[m
+[32m+[m	[32mint lh4;[m
+[32m+[m	[32mint lh5;[m
+[32m+[m	[32mint rh1;[m
+[32m+[m	[32mint rh2;[m
+[32m+[m	[32mint rh3;[m
+[32m+[m	[32mint rh4;[m
+[32m+[m	[32mint rh5;[m[41m	[m
+[32m+[m[32m};[m
+ [m
+ int width = 1024;[m
+ int height = 768;[m
+[31m-int lh1 = 0;[m
+[31m-int lh2 = 0;[m
+[31m-int lh3 = 0;[m
+[31m-int lh4 = 0;[m
+[31m-int lh5 = 0;[m
+[31m-int rh1 = 0;[m
+[31m-int rh2 = 0;[m
+[31m-int rh3 = 0;[m
+[31m-int rh4 = 0;[m
+[31m-int rh5 = 0;[m
+ int jugador;[m
+ int equipo;[m
+ int sock1, sock2;[m
+[31m-int x = 0;[m
+[31m-int y = 0;[m
+[32m+[m[32mint goles_L =0;[m
+[32m+[m[32mint goles_R =0;[m
+[32m+[m[32mstruct Juego futbol;[m
+[32m+[m[41m	[m
+[32m+[m
+ [m
+[31m-struct play{[m
+[31m-	int x;[m
+[31m-	int y;[m
+[31m-};[m
+ [m
+[31m-struct ball{[m
+[31m-	int x;[m
+[31m-	int y;[m
+[31m-	int s;[m
+[31m-	int chunk;[m
+[31m-	double chunk2;[m
+[31m-};[m
+ [m
+ [m
+ void changeSize(int w, int h) {[m
+[36m@@ -75,7 +73,15 @@[m [mvoid changeSize(int w, int h) {[m
+ 	glMatrixMode(GL_MODELVIEW);[m
+ }[m
+ [m
+[31m-[m
+[32m+[m[32mvoid drawBitmapText(char *string,float x,float y,float z)[m[41m [m
+[32m+[m[32m{[m[41m  [m
+[32m+[m	[32mchar *c;[m
+[32m+[m	[32mglRasterPos3f(x, y,z);[m
+[32m+[m	[32mfor (c=string; *c != '\0'; c++)[m[41m [m
+[32m+[m	[32m{[m
+[32m+[m	[32mglutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *c);[m
+[32m+[m	[32m}[m
+[32m+[m[32m}[m
+ [m
+ void renderScene(void) {[m
+ [m
+[36m@@ -201,10 +207,10 @@[m [mvoid renderScene(void) {[m
+ 		double f;[m
+ 		for(f = 0.0; f <= 2 * M_PIl; f += 0.1)[m
+ 		{[m
+[31m-		double y = 100 * sin(f);[m
+[31m-		double x = 100 * cos(f);[m
+[31m-		glVertex3f(x, y, 0);[m
+[31m-		//glVertex2f(x,y);[m
+[32m+[m			[32mdouble y = 100 * sin(f);[m
+[32m+[m			[32mdouble x = 100 * cos(f);[m
+[32m+[m			[32mglVertex3f(x, y, 0);[m
+[32m+[m			[32m//glVertex2f(x,y);[m
+ 		}[m
+ 		glVertex3f(100, 0, 0);[m
+ 		glEnd();[m
+[36m@@ -215,11 +221,11 @@[m [mvoid renderScene(void) {[m
+ 		glBegin(GL_QUADS);[m
+ [m
+ 		[m
+[31m-		glVertex3f((2*(((width/2)-10)/8))-15,(((height/2)-10)/2)+20+rh1, 0);[m
+[31m-		glVertex3f((2*(((width/2)-10)/8))+15,(((height/2)-10)/2)+20+rh1, 0);[m
+[31m-		glVertex3f((2*(((width/2)-10)/8))+15,(((height/2)-10)/2)-20+rh1, 0);[m
+[31m-		glVertex3f((2*(((width/2)-10)/8))-15,(((height/2)-10)/2)-20+rh1, 0);[m
+[31m-		glVertex3f((2*(((width/2)-10)/8))-15,(((height/2)-10)/2)+20+rh1, 0);[m
+[32m+[m		[32mglVertex3f((2*(((width/2)-10)/8))-15,(((height/2)-10)/2)+20+futbol.rh1, 0);[m
+[32m+[m		[32mglVertex3f((2*(((width/2)-10)/8))+15,(((height/2)-10)/2)+20+futbol.rh1, 0);[m
+[32m+[m		[32mglVertex3f((2*(((width/2)-10)/8))+15,(((height/2)-10)/2)-20+futbol.rh1, 0);[m
+[32m+[m		[32mglVertex3f((2*(((width/2)-10)/8))-15,(((height/2)-10)/2)-20+futbol.rh1, 0);[m
+[32m+[m		[32mglVertex3f((2*(((width/2)-10)/8))-15,(((height/2)-10)/2)+20+futbol.rh1, 0);[m
+ [m
+ 		glEnd();[m
+ 		[m
+[36m@@ -228,11 +234,11 @@[m [mvoid renderScene(void) {[m
+ 		glBegin(GL_QUADS);[m
+ [m
+ 		[m
+[31m-		glVertex3f((2*(((width/2)-10)/8))-15,(((-height/2)-10)/2)+20+rh2, 0);[m
+[31m-		glVertex3f((2*(((width/2)-10)/8))+15,(((-height/2)-10)/2)+20+rh2, 0);[m
+[31m-		glVertex3f((2*(((width/2)-10)/8))+15,(((-height/2)-10)/2)-20+rh2, 0);[m
+[31m-		glVertex3f((2*(((width/2)-10)/8))-15,(((-height/2)-10)/2)-20+rh2, 0);[m
+[31m-		glVertex3f((2*(((width/2)-10)/8))-15,(((-height/2)-10)/2)+20+rh2, 0);[m
+[32m+[m		[32mglVertex3f((2*(((width/2)-10)/8))-15,(((-height/2)-10)/2)+20+futbol.rh2, 0);[m
+[32m+[m		[32mglVertex3f((2*(((width/2)-10)/8))+15,(((-height/2)-10)/2)+20+futbol.rh2, 0);[m
+[32m+[m		[32mglVertex3f((2*(((width/2)-10)/8))+15,(((-height/2)-10)/2)-20+futbol.rh2, 0);[m
+[32m+[m		[32mglVertex3f((2*(((width/2)-10)/8))-15,(((-height/2)-10)/2)-20+futbol.rh2, 0);[m
+[32m+[m		[32mglVertex3f((2*(((width/2)-10)/8))-15,(((-height/2)-10)/2)+20+futbol.rh2, 0);[m
+ [m
+ 		glEnd();[m
+ 		[m
+[36m@@ -241,11 +247,11 @@[m [mvoid renderScene(void) {[m
+ 		glBegin(GL_QUADS);[m
+ [m
+ 		[m
+[31m-		glVertex3f((4*(((width/2)-10)/8))-15,(((0)-10)/2)+20+rh3, 0);[m
+[31m-		glVertex3f((4*(((width/2)-10)/8))+15,(((0)-10)/2)+20+rh3, 0);[m
+[31m-		glVertex3f((4*(((width/2)-10)/8))+15,(((0)-10)/2)-20+rh3, 0);[m
+[31m-		glVertex3f((4*(((width/2)-10)/8))-15,(((0)-10)/2)-20+rh3, 0);[m
+[31m-		glVertex3f((4*(((width/2)-10)/8))-15,(((0)-10)/2)+20+rh3, 0);[m
+[32m+[m		[32mglVertex3f((4*(((width/2)-10)/8))-15,(((0)-10)/2)+20+futbol.rh3, 0);[m
+[32m+[m		[32mglVertex3f((4*(((width/2)-10)/8))+15,(((0)-10)/2)+20+futbol.rh3, 0);[m
+[32m+[m		[32mglVertex3f((4*(((width/2)-10)/8))+15,(((0)-10)/2)-20+futbol.rh3, 0);[m
+[32m+[m		[32mglVertex3f((4*(((width/2)-10)/8))-15,(((0)-10)/2)-20+futbol.rh3, 0);[m
+[32m+[m		[32mglVertex3f((4*(((width/2)-10)/8))-15,(((0)-10)/2)+20+futbol.rh3, 0);[m
+ [m
+ 		glEnd();[m
+ 		[m
+[36m@@ -254,11 +260,11 @@[m [mvoid renderScene(void) {[m
+ 		glBegin(GL_QUADS);[m
+ [m
+ 		[m
+[31m-		glVertex3f((6*(((width/2)-10)/8))-15,(((height/2)-10)/2)+20+rh4, 0);[m
+[31m-		glVertex3f((6*(((width/2)-10)/8))+15,(((height/2)-10)/2)+20+rh4, 0);[m
+[31m-		glVertex3f((6*(((width/2)-10)/8))+15,(((height/2)-10)/2)-20+rh4, 0);[m
+[31m-		glVertex3f((6*(((width/2)-10)/8))-15,(((height/2)-10)/2)-20+rh4, 0);[m
+[31m-		glVertex3f((6*(((width/2)-10)/8))-15,(((height/2)-10)/2)+20+rh4, 0);[m
+[32m+[m		[32mglVertex3f((6*(((width/2)-10)/8))-15,(((height/2)-10)/2)+20+futbol.rh4, 0);[m
+[32m+[m		[32mglVertex3f((6*(((width/2)-10)/8))+15,(((height/2)-10)/2)+20+futbol.rh4, 0);[m
+[32m+[m		[32mglVertex3f((6*(((width/2)-10)/8))+15,(((height/2)-10)/2)-20+futbol.rh4, 0);[m
+[32m+[m		[32mglVertex3f((6*(((width/2)-10)/8))-15,(((height/2)-10)/2)-20+futbol.rh4, 0);[m
+[32m+[m		[32mglVertex3f((6*(((width/2)-10)/8))-15,(((height/2)-10)/2)+20+futbol.rh4, 0);[m
+ [m
+ 		glEnd();[m
+ 		[m
+[36m@@ -267,11 +273,11 @@[m [mvoid renderScene(void) {[m
+ 		glBegin(GL_QUADS);[m
+ [m
+ 		[m
+[31m-		glVertex3f((6*(((width/2)-10)/8))-15,(((-height/2)-10)/2)+20+rh5, 0);[m
+[31m-		glVertex3f((6*(((width/2)-10)/8))+15,(((-height/2)-10)/2)+20+rh5, 0);[m
+[31m-		glVertex3f((6*(((width/2)-10)/8))+15,(((-height/2)-10)/2)-20+rh5, 0);[m
+[31m-		glVertex3f((6*(((width/2)-10)/8))-15,(((-height/2)-10)/2)-20+rh5, 0);[m
+[31m-		glVertex3f((6*(((width/2)-10)/8))-15,(((-height/2)-10)/2)+20+rh5, 0);[m
+[32m+[m		[32mglVertex3f((6*(((width/2)-10)/8))-15,(((-height/2)-10)/2)+20+futbol.rh5, 0);[m
+[32m+[m		[32mglVertex3f((6*(((width/2)-10)/8))+15,(((-height/2)-10)/2)+20+futbol.rh5, 0);[m
+[32m+[m		[32mglVertex3f((6*(((width/2)-10)/8))+15,(((-height/2)-10)/2)-20+futbol.rh5, 0);[m
+[32m+[m		[32mglVertex3f((6*(((width/2)-10)/8))-15,(((-height/2)-10)/2)-20+futbol.rh5, 0);[m
+[32m+[m		[32mglVertex3f((6*(((width/2)-10)/8))-15,(((-height/2)-10)/2)+20+futbol.rh5, 0);[m
+ [m
+ 		glEnd();[m
+ 		[m
+[36m@@ -281,11 +287,11 @@[m [mvoid renderScene(void) {[m
+ 		glBegin(GL_QUADS);[m
+ [m
+ 		[m
+[31m-		glVertex3f((2*(((-width/2)-10)/8))-15,(((height/2)-10)/2)+20+lh1, 0);[m
+[31m-		glVertex3f((2*(((-width/2)-10)/8))+15,(((height/2)-10)/2)+20+lh1, 0);[m
+[31m-		glVertex3f((2*(((-width/2)-10)/8))+15,(((height/2)-10)/2)-20+lh1, 0);[m
+[31m-		glVertex3f((2*(((-width/2)-10)/8))-15,(((height/2)-10)/2)-20+lh1, 0);[m
+[31m-		glVertex3f((2*(((-width/2)-10)/8))-15,(((height/2)-10)/2)+20+lh1, 0);[m
+[32m+[m		[32mglVertex3f((2*(((-width/2)-10)/8))-15,(((height/2)-10)/2)+20+futbol.lh1, 0);[m
+[32m+[m		[32mglVertex3f((2*(((-width/2)-10)/8))+15,(((height/2)-10)/2)+20+futbol.lh1, 0);[m
+[32m+[m		[32mglVertex3f((2*(((-width/2)-10)/8))+15,(((height/2)-10)/2)-20+futbol.lh1, 0);[m
+[32m+[m		[32mglVertex3f((2*(((-width/2)-10)/8))-15,(((height/2)-10)/2)-20+futbol.lh1, 0);[m
+[32m+[m		[32mglVertex3f((2*(((-width/2)-10)/8))-15,(((height/2)-10)/2)+20+futbol.lh1, 0);[m
+ [m
+ 		glEnd();[m
+ 		[m
+[36m@@ -294,11 +300,11 @@[m [mvoid renderScene(void) {[m
+ 		glBegin(GL_QUADS);[m
+ [m
+ 		[m
+[31m-		glVertex3f((2*(((-width/2)-10)/8))-15,(((-height/2)-10)/2)+20+lh2, 0);[m
+[31m-		glVertex3f((2*(((-width/2)-10)/8))+15,(((-height/2)-10)/2)+20+lh2, 0);[m
+[31m-		glVertex3f((2*(((-width/2)-10)/8))+15,(((-height/2)-10)/2)-20+lh2, 0);[m
+[31m-		glVertex3f((2*(((-width/2)-10)/8))-15,(((-height/2)-10)/2)-20+lh2, 0);[m
+[31m-		glVertex3f((2*(((-width/2)-10)/8))-15,(((-height/2)-10)/2)+20+lh2, 0);[m
+[32m+[m		[32mglVertex3f((2*(((-width/2)-10)/8))-15,(((-height/2)-10)/2)+20+futbol.lh2, 0);[m
+[32m+[m		[32mglVertex3f((2*(((-width/2)-10)/8))+15,(((-height/2)-10)/2)+20+futbol.lh2, 0);[m
+[32m+[m		[32mglVertex3f((2*(((-width/2)-10)/8))+15,(((-height/2)-10)/2)-20+futbol.lh2, 0);[m
+[32m+[m		[32mglVertex3f((2*(((-width/2)-10)/8))-15,(((-height/2)-10)/2)-20+futbol.lh2, 0);[m
+[32m+[m		[32mglVertex3f((2*(((-width/2)-10)/8))-15,(((-height/2)-10)/2)+20+futbol.lh2, 0);[m
+ [m
+ 		glEnd();[m
+ 		[m
+[36m@@ -307,11 +313,11 @@[m [mvoid renderScene(void) {[m
+ 		glBegin(GL_QUADS);[m
+ [m
+ 		[m
+[31m-		glVertex3f((4*(((-width/2)-10)/8))-15,(((0)-10)/2)+20+lh3, 0);[m
+[31m-		glVertex3f((4*(((-width/2)-10)/8))+15,(((0)-10)/2)+20+lh3, 0);[m
+[31m-		glVertex3f((4*(((-width/2)-10)/8))+15,(((0)-10)/2)-20+lh3, 0);[m
+[31m-		glVertex3f((4*(((-width/2)-10)/8))-15,(((0)-10)/2)-20+lh3, 0);[m
+[31m-		glVertex3f((4*(((-width/2)-10)/8))-15,(((0)-10)/2)+20+lh3, 0);[m
+[32m+[m		[32mglVertex3f((4*(((-width/2)-10)/8))-15,(((0)-10)/2)+20+futbol.lh3, 0);[m
+[32m+[m		[32mglVertex3f((4*(((-width/2)-10)/8))+15,(((0)-10)/2)+20+futbol.lh3, 0);[m
+[32m+[m		[32mglVertex3f((4*(((-width/2)-10)/8))+15,(((0)-10)/2)-20+futbol.lh3, 0);[m
+[32m+[m		[32mglVertex3f((4*(((-width/2)-10)/8))-15,(((0)-10)/2)-20+futbol.lh3, 0);[m
+[32m+[m		[32mglVertex3f((4*(((-width/2)-10)/8))-15,(((0)-10)/2)+20+futbol.lh3, 0);[m
+ [m
+ 		glEnd();[m
+ 		[m
+[36m@@ -320,11 +326,11 @@[m [mvoid renderScene(void) {[m
+ 		glBegin(GL_QUADS);[m
+ [m
+ 		[m
+[31m-		glVertex3f((6*(((-width/2)-10)/8))-15,(((height/2)-10)/2)+20+lh4, 0);[m
+[31m-		glVertex3f((6*(((-width/2)-10)/8))+15,(((height/2)-10)/2)+20+lh4, 0);[m
+[31m-		glVertex3f((6*(((-width/2)-10)/8))+15,(((height/2)-10)/2)-20+lh4, 0);[m
+[31m-		glVertex3f((6*(((-width/2)-10)/8))-15,(((height/2)-10)/2)-20+lh4, 0);[m
+[31m-		glVertex3f((6*(((-width/2)-10)/8))-15,(((height/2)-10)/2)+20+lh4, 0);[m
+[32m+[m		[32mglVertex3f((6*(((-width/2)-10)/8))-15,(((height/2)-10)/2)+20+futbol.lh4, 0);[m
+[32m+[m		[32mglVertex3f((6*(((-width/2)-10)/8))+15,(((height/2)-10)/2)+20+futbol.lh4, 0);[m
+[32m+[m		[32mglVertex3f((6*(((-width/2)-10)/8))+15,(((height/2)-10)/2)-20+futbol.lh4, 0);[m
+[32m+[m		[32mglVertex3f((6*(((-width/2)-10)/8))-15,(((height/2)-10)/2)-20+futbol.lh4, 0);[m
+[32m+[m		[32mglVertex3f((6*(((-width/2)-10)/8))-15,(((height/2)-10)/2)+20+futbol.lh4, 0);[m
+ [m
+ 		glEnd();[m
+ 		[m
+[36m@@ -333,11 +339,11 @@[m [mvoid renderScene(void) {[m
+ 		glBegin(GL_QUADS);[m
+ [m
+ 		[m
+[31m-		glVertex3f((6*(((-width/2)-10)/8))-15,(((-height/2)-10)/2)+20+lh5, 0);[m
+[31m-		glVertex3f((6*(((-width/2)-10)/8))+15,(((-height/2)-10)/2)+20+lh5, 0);[m
+[31m-		glVertex3f((6*(((-width/2)-10)/8))+15,(((-height/2)-10)/2)-20+lh5, 0);[m
+[31m-		glVertex3f((6*(((-width/2)-10)/8))-15,(((-height/2)-10)/2)-20+lh5, 0);[m
+[31m-		glVertex3f((6*(((-width/2)-10)/8))-15,(((-height/2)-10)/2)+20+lh5, 0);[m
+[32m+[m		[32mglVertex3f((6*(((-width/2)-10)/8))-15,(((-height/2)-10)/2)+20+futbol.lh5, 0);[m
+[32m+[m		[32mglVertex3f((6*(((-width/2)-10)/8))+15,(((-height/2)-10)/2)+20+futbol.lh5, 0);[m
+[32m+[m		[32mglVertex3f((6*(((-width/2)-10)/8))+15,(((-height/2)-10)/2)-20+futbol.lh5, 0);[m
+[32m+[m		[32mglVertex3f((6*(((-width/2)-10)/8))-15,(((-height/2)-10)/2)-20+futbol.lh5, 0);[m
+[32m+[m		[32mglVertex3f((6*(((-width/2)-10)/8))-15,(((-height/2)-10)/2)+20+futbol.lh5, 0);[m
+ [m
+ 		glEnd();[m
+ 		/*[m
+[36m@@ -354,12 +360,19 @@[m [mvoid renderScene(void) {[m
+ 		glColor3f(1, 1, 1);[m
+ 		glBegin(GL_QUADS);[m
+ 		[m
+[31m-		glVertex3f(x, y, 0);[m
+[31m-		glVertex3f(x+8.5, y, 0);[m
+[31m-		glVertex3f(x+8.5, y-10, 0);[m
+[31m-		glVertex3f(x, y-10, 0);[m
+[32m+[m		[32mglVertex3f(futbol.x, futbol.y, 0);[m
+[32m+[m		[32mglVertex3f(futbol.x+8.5, futbol.y, 0);[m
+[32m+[m		[32mglVertex3f(futbol.x+8.5, futbol.y-10, 0);[m
+[32m+[m		[32mglVertex3f(futbol.x, futbol.y-10, 0);[m
+ [m
+ 		glEnd();[m
+[32m+[m[41m		[m
+[32m+[m		[32mchar label[20];[m
+[32m+[m[41m		[m
+[32m+[m		[32mglColor3f(1, 1, 1);[m
+[32m+[m		[32msprintf(label," %d - %d ", goles_L, goles_R);[m
+[32m+[m		[32mdrawBitmapText(label,-27,(height/2)+100,0);[m
+[32m+[m		[32mglutSwapBuffers();[m[41m [m
+ 		//cube(xx, xx + 0.05, yy, yy + 0.05, 0.0);[m
+ 	[m
+ [m
+[36m@@ -372,37 +385,37 @@[m [mvoid renderScene(void) {[m
+ */[m
+ 	glutSwapBuffers();[m
+ }[m
+[31m-/*[m
+[32m+[m
+ void sendp(){[m
+[31m-	char msg[4];[m
+[31m-	struct play *p = (struct play *)msg;[m
+[32m+[m	[32mchar msg[sizeof(int)]={0};[m
+ 	if(equipo)[m
+ 	{[m
+ 		if(jugador == 1)[m
+[31m-			p -> x = rh1;[m
+[32m+[m			[32msprintf(msg, "%d", futbol.rh1);[m
+ 		else if(jugador == 2)[m
+[31m-			p -> x = rh2;[m
+[32m+[m			[32msprintf(msg, "%d", futbol.rh2);[m
+ 		else if(jugador == 3)[m
+[31m-			p -> x = rh3;[m
+[32m+[m			[32msprintf(msg, "%d", futbol.rh3);[m
+ 		else if(jugador == 4)[m
+[31m-			p -> x = rh4;[m
+[32m+[m			[32msprintf(msg, "%d", futbol.rh4);[m
+ 		else if(jugador == 5)[m
+[31m-			p -> x = rh5;[m
+[32m+[m			[32msprintf(msg, "%d", futbol.rh5);[m
+ 	}[m
+ 	else [m
+ 	{[m
+ 		if(jugador == 1)[m
+[31m-			p -> x = lh1;[m
+[32m+[m			[32msprintf(msg, "%d", futbol.lh1);[m
+ 		else if(jugador == 2)[m
+[31m-			p -> x = lh2;[m
+[32m+[m			[32msprintf(msg, "%d", futbol.lh2);[m
+ 		else if(jugador == 3)[m
+[31m-			p -> x = lh3;[m
+[32m+[m			[32msprintf(msg, "%d", futbol.lh3);[m
+ 		else if(jugador == 4)[m
+[31m-			p -> x = lh4;[m
+[32m+[m			[32msprintf(msg, "%d", futbol.lh4);[m
+ 		else if(jugador == 5)[m
+[31m-			p -> x = lh5;[m
+[32m+[m			[32msprintf(msg, "%d", futbol.lh5);[m
+ 	}[m
+[31m-	send(sock2, msg, 4, 0);[m
+[32m+[m	[32m//printf("este es rh1: %d",rh1);[m
+[32m+[m	[32msend(sock2, msg, sizeof(int), 0);[m
+ }[m
+ void keyboard(unsigned char key, int x, int y)[m
+ {[m
+[36m@@ -410,28 +423,28 @@[m [mvoid keyboard(unsigned char key, int x, int y)[m
+ 		if (equipo == 0)[m
+ 		{[m
+ 			if(jugador == 1)[m
+[31m-				lh1++;[m
+[32m+[m				[32mfutbol.lh1++;[m
+ 			else if(jugador == 2) [m
+[31m-				lh2++;[m
+[32m+[m				[32mfutbol.lh2++;[m
+ 			else if(jugador == 3) [m
+[31m-				lh3++;[m
+[32m+[m				[32mfutbol.lh3++;[m
+ 			else if(jugador == 4) [m
+[31m-				lh4++;[m
+[32m+[m				[32mfutbol.lh4++;[m
+ 			else if(jugador == 5) [m
+[31m-				lh5++;[m
+[32m+[m				[32mfutbol.lh5++;[m
+ 		}[m
+ 		else if (equipo == 1)[m
+ 		{[m
+ 			if(jugador == 1) [m
+[31m-				rh1++;[m
+[32m+[m				[32mfutbol.rh1++;[m
+ 			else if(jugador == 2) [m
+[31m-				rh2++;[m
+[32m+[m				[32mfutbol.rh2++;[m
+ 			else if(jugador == 3) [m
+[31m-				rh3++;[m
+[32m+[m				[32mfutbol.rh3++;[m
+ 			else if(jugador == 4) [m
+[31m-				rh4++;[m
+[32m+[m				[32mfutbol.rh4++;[m
+ 			else if(jugador == 5) [m
+[31m-				rh5++;	[m
+[32m+[m				[32mfutbol.rh5++;[m[41m	[m
+ 		}[m
+ 		glutPostRedisplay();[m
+ 		sendp();	[m
+[36m@@ -439,58 +452,71 @@[m [mvoid keyboard(unsigned char key, int x, int y)[m
+ 		if (equipo == 0)[m
+ 		{[m
+ 			if(jugador == 1)[m
+[31m-				lh1--;[m
+[32m+[m				[32mfutbol.lh1--;[m
+ 			else if(jugador == 2) [m
+[31m-				lh2--;[m
+[32m+[m				[32mfutbol.lh2--;[m
+ 			else if(jugador == 3) [m
+[31m-				lh3--;[m
+[32m+[m				[32mfutbol.lh3--;[m
+ 			else if(jugador == 4) [m
+[31m-				lh4--;[m
+[32m+[m				[32mfutbol.lh4--;[m
+ 			else if(jugador == 5) [m
+[31m-				lh5--;[m
+[32m+[m				[32mfutbol.lh5--;[m
+ 		}[m
+ 		else if (equipo == 1)[m
+ 		{[m
+ 			if(jugador == 1) [m
+[31m-				rh1--;[m
+[32m+[m				[32mfutbol.rh1--;[m
+ 			else if(jugador == 2) [m
+[31m-				rh2--;[m
+[32m+[m				[32mfutbol.rh2--;[m
+ 			else if(jugador == 3) [m
+[31m-				rh3--;[m
+[32m+[m				[32mfutbol.rh3--;[m
+ 			else if(jugador == 4) [m
+[31m-				rh4--;[m
+[32m+[m				[32mfutbol.rh4--;[m
+ 			else if(jugador == 5) [m
+[31m-				rh5--;[m
+[32m+[m				[32mfutbol.rh5--;[m
+ 		}[m
+ 		glutPostRedisplay();[m
+ 		sendp();	[m
+ 		[m
+ 	}[m
+[31m-	////[m
+[32m+[m	[32m/*[m
+ 	else if((char)key == 'r'){[m
+ 		jugador++;[m
+ 	}[m
+ 	else if((char)key == 'f'){[m
+ 		jugador--;[m
+[31m-	}*//*[m
+[32m+[m	[32m}*/[m
+ }[m
+[31m-*/[m
+[32m+[m
+ [m
+ [m
+ [m
+ void timer(int a) {[m
+[31m-	char msg[12];[m
+[32m+[m	[32mprintf("edeqweqw");[m
+[32m+[m	[32mchar msg[sizeof(struct Juego)]={0};[m
+[32m+[m	[32m//char msg[56];[m
+ 	char *buff = "a";[m
+[31m-	int cc;[m
+[31m-	if((cc = recv(sock1, msg, 8, 0)) == -1){[m
+[31m-		perror("ERROR");[m
+[31m-		close(sock1);[m
+[31m-		exit(0);[m
+[31m-	}[m
+[31m-	printf("\n\ndatos reci %s\n\n",msg);[m
+[32m+[m	[32m//int cc;[m
+[32m+[m	[32mint cc =recv(sock1, msg, sizeof(futbol), 0);[m
+[32m+[m	[32mprintf("edeqweqw");[m
+[32m+[m	[32mmemcpy(&futbol, msg, sizeof(futbol));[m
+[32m+[m	[32m/*printf("\n\ndatos reci %s\n\n",msg);[m
+ 	struct ball *b = (struct ball *)msg;[m
+ 	x = (int)b -> x;[m
+ 	y = (int)b -> y;[m
+[32m+[m	[32mcantidad_L = (int)b->M_L;[m
+[32m+[m	[32mcantidad_R = (int)b->M_R;[m
+[32m+[m	[32mlh1 = (int)b->lh1;[m
+[32m+[m	[32mlh2 = (int)b->lh2;[m
+[32m+[m	[32mlh3 = (int)b->lh3;[m
+[32m+[m	[32mlh4 = (int)b->lh4;[m
+[32m+[m	[32mlh5 = (int)b->lh5;[m
+[32m+[m	[32mrh1 = (int)b->rh1;[m
+[32m+[m	[32mrh2 = (int)b->rh2;[m
+[32m+[m	[32mrh3 = (int)b->rh3;[m
+[32m+[m	[32mrh4 = (int)b->rh4;[m
+[32m+[m	[32mrh5 = (int)b->rh5;[m
+[32m+[m[41m	[m
+ 	/*[m
+ 	if(equipo)[m
+ 	{[m
+[36m@@ -541,26 +567,26 @@[m [mvoid timer(int a) {[m
+ 	} [m
+ 	* */[m
+ 	if(equipo){[m
+[31m-		if(x == 540){[m
+[32m+[m		[32mif(futbol.x == 540){[m
+ 			printf("\n\nYou Win!\n\n");[m
+ 			close(sock1);[m
+ 			close(sock2);[m
+ 			exit(0);	[m
+ 		}[m
+[31m-		if(x == 550){[m
+[32m+[m		[32mif(futbol.x == 550){[m
+ 			printf("\n\nYou Lost!\n\n");[m
+ 			close(sock1);[m
+ 			close(sock2);[m
+ 			exit(0);	[m
+ 		}[m
+ 	}else{[m
+[31m-		if(x == 550){[m
+[32m+[m		[32mif(futbol.x == 550){[m
+ 			printf("\n\nYou Win!\n\n");[m
+ 			close(sock1);[m
+ 			close(sock2);[m
+ 			exit(0);	[m
+ 		}[m
+[31m-		if(x == 540){[m
+[32m+[m		[32mif(futbol.x == 540){[m
+ 			printf("\n\nYou Lost!\n\n");[m
+ 			close(sock1);[m
+ 			close(sock2);[m
+[36m@@ -589,7 +615,7 @@[m [mint connect_sock(char *ip, char *port){[m
+ }[m
+ [m
+ void asignar_equipo(char c){[m
+[31m-	if(c == '0'){[m
+[32m+[m	[32mif(c == '1'){[m
+ 		printf("\nIzquierda; ");[m
+ 		equipo = 1;	[m
+ 	}else{[m
+[36m@@ -640,25 +666,37 @@[m [mint main(int argc, char **argv) {[m
+ 		printf("\n usage :\n\n ./game ip \n\n");		[m
+ 		//return;[m
+ 	}[m
+[32m+[m[41m	[m
+ 	//int sock;[m
+ 	[m
+ 	printf("\n\n------------Pong--------------\n\n");[m
+ 	[m
+ 	sock1 = connect_sock(argv[1], "9012");[m
+[31m-	//sock2 = connect_sock(argv[1], "9013");[m
+[32m+[m	[32msock2 = connect_sock(argv[1], "9013");[m
+ 	[m
+ 	printf("Connected to Server\n");[m
+[32m+[m[41m	[m
+[32m+[m	[32mfutbol.x=0;[m
+[32m+[m	[32mfutbol.y=0;[m[41m [m
+[32m+[m	[32mfutbol.M_L=0;[m
+[32m+[m	[32mfutbol.M_R=0;[m
+[32m+[m	[32mfutbol.lh1=0;[m
+[32m+[m	[32mfutbol.lh2=0;[m
+[32m+[m	[32mfutbol.lh3=0;[m
+[32m+[m	[32mfutbol.lh4=0;[m
+[32m+[m	[32mfutbol.lh5=0;[m
+[32m+[m	[32mfutbol.rh1=0;[m
+[32m+[m	[32mfutbol.rh2=0;[m
+[32m+[m	[32mfutbol.rh3=0;[m
+[32m+[m	[32mfutbol.rh4=0;[m
+[32m+[m	[32mfutbol.rh5=0;[m
+ [m
+ 	char s[2];[m
+[31m-	if(recv(sock1, s, 2, 0) == -1){[m
+[31m-		perror("ERROR");[m
+[31m-		close(sock1);[m
+[31m-		exit(0);[m
+[31m-	}[m
+[32m+[m	[32mint cc = recv(sock1, s, 2, 0);[m
+ 	printf("informacion revibida\n %s", s);[m
+ 	asignar_equipo(s[0]);[m
+ 	asignar_jugador(s[1]);[m
+[31m-[m
+[32m+[m	[32mprintf("wewew");[m
+ [m
+ 	// init GLUT and create window[m
+ 	glutInit(&argc, argv);[m
+[36m@@ -668,12 +706,13 @@[m [mint main(int argc, char **argv) {[m
+ 	glutCreateWindow("Lighthouse3D - GLUT Tutorial");[m
+ 	[m
+ 	//init();[m
+[32m+[m[41m	[m
+ 	glutTimerFunc(500, timer, 0);[m
+ [m
+ 	// register callbacks[m
+ 	glutDisplayFunc(renderScene);[m
+ 	glutReshapeFunc(changeSize);[m
+[31m-	//glutKeyboardFunc( keyboard );[m
+[32m+[m	[32mglutKeyboardFunc( keyboard );[m
+ [m
+ 	// enter GLUT event processing loop[m
+ 	glutMainLoop();[m
+[1mdiff --git a/server b/server[m
+[1mindex 4409809..6558264 100755[m
+Binary files a/server and b/server differ
+[1mdiff --git a/server.c b/server.c[m
+[1mindex bb2c6c1..17fec04 100644[m
+[1m--- a/server.c[m
+[1m+++ b/server.c[m
+[36m@@ -18,37 +18,28 @@[m [mint lmark = 0;[m
+ int rmark = 0;[m
+ pthread_mutex_t mutex;[m
+ [m
+[31m-struct ball{[m
+[32m+[m[32mstruct Juego{[m
+ 	int x;[m
+ 	int y; [m
+[31m-	int ra;[m
+[31m-	int mark;[m
+[31m-	double chunk;[m
+[32m+[m	[32mint M_L;[m
+[32m+[m	[32mint M_R;[m
+[32m+[m	[32mint lh1;[m
+[32m+[m	[32mint lh2;[m
+[32m+[m	[32mint lh3;[m
+[32m+[m	[32mint lh4;[m
+[32m+[m	[32mint lh5;[m
+[32m+[m	[32mint rh1;[m
+[32m+[m	[32mint rh2;[m
+[32m+[m	[32mint rh3;[m
+[32m+[m	[32mint rh4;[m
+[32m+[m	[32mint rh5;[m
+ };[m
+ [m
+[31m-struct play{[m
+[31m-	int x;[m
+[31m-	int y;[m
+[31m-};[m
+[31m-[m
+[31m-struct ball *b;[m
+[32m+[m[32mstruct Juego futbol;[m
+ int height = (768/2)-10;[m
+ int width = (1024/2)-10;[m
+ int incx;[m
+ int incy;[m
+[31m-int lh1 = 0;[m
+[31m-int lh2 = 0;[m
+[31m-int lh3 = 0;[m
+[31m-int lh4 = 0;[m
+[31m-int lh5 = 0;[m
+[31m-int rh1 = 0;[m
+[31m-int rh2 = 0;[m
+[31m-int rh3 = 0;[m
+[31m-int rh4 = 0;[m
+[31m-int rh5 = 0;[m
+[31m-[m
+[31m-int x = 1;[m
+[31m-int y = 1;[m
+ int i = 0;[m
+ int th = 0;[m
+ [m
+[36m@@ -57,10 +48,10 @@[m [mvoid create_sock(int port, int port2){[m
+ 	if(!(sock = socket(AF_INET, SOCK_STREAM, 0))){[m
+ 		printf("ERROR : error creating socket\n");[m
+ 	}[m
+[31m-	/*[m
+[32m+[m[41m	[m
+ 	if(!(sock2 = socket(AF_INET, SOCK_STREAM, 0))){[m
+ 		printf("ERROR : error creating socket\n");[m
+[31m-	}*/[m
+[32m+[m	[32m}[m
+ 	struct sockaddr_in ad, add, ad2, add2;[m
+ 	ad.sin_family = AF_INET;[m
+ 	ad.sin_addr.s_addr = htonl(INADDR_ANY);[m
+[36m@@ -69,26 +60,38 @@[m [mvoid create_sock(int port, int port2){[m
+ 	ad2.sin_family = AF_INET;[m
+ 	ad2.sin_addr.s_addr = INADDR_ANY;[m
+ 	ad2.sin_port = htons(port2);[m
+[32m+[m[41m	[m
+[32m+[m	[32mint tr=1;[m
+ [m
+[31m-	if(bind(sock, (struct sockaddr *)&ad, sizeof(ad))==-1)[m
+[31m-	{[m
+[31m-		printf("error en el Blind");[m
+[31m-		exit(0);[m
+[32m+[m	[32m// kill "Address already in use" error message[m
+[32m+[m	[32mif (setsockopt(sock2,SOL_SOCKET,SO_REUSEADDR,&tr,sizeof(int)) == -1) {[m
+[32m+[m		[32mperror("setsockopt");[m
+[32m+[m		[32mexit(1);[m
+[32m+[m	[32m}[m
+[32m+[m[41m	[m
+[32m+[m		[32m// kill "Address already in use" error message[m
+[32m+[m	[32mif (setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,&tr,sizeof(int)) == -1) {[m
+[32m+[m		[32mperror("setsockopt");[m
+[32m+[m		[32mexit(1);[m
+ 	}[m
+[31m-	else[m
+[31m-		listen(sock, 1);[m
+ [m
+[31m-	//bind(sock2, (struct sockaddr *)&ad2, sizeof(ad2));[m
+[31m-	//listen(sock2, 1);[m
+[32m+[m
+[32m+[m	[32mbind(sock, (struct sockaddr *)&ad, sizeof(ad));[m
+[32m+[m	[32mlisten(sock, 1);[m
+[32m+[m
+[32m+[m	[32mbind(sock2, (struct sockaddr *)&ad2, sizeof(ad2));[m
+[32m+[m	[32mlisten(sock2, 1);[m
+ [m
+ 	int addrlen = sizeof(add);[m
+[32m+[m	[32mprintf("dasdwqeqeqw\n");[m
+ 	new1 = accept(sock, (struct sockaddr *)&add, &addrlen);[m
+ 	if(new1) printf("Conectador jugador 1 Equipo derecho\n");[m
+ 	else {[m
+ 		printf("ERROR : error connecting\n");[m
+ 		exit(0);	[m
+ 	}[m
+[31m-	/*addrlen = sizeof(add2);[m
+[32m+[m	[32maddrlen = sizeof(add2);[m
+[32m+[m	[32mprintf("dasdwqeqeqw\n");[m
+ 	new2 = accept(sock2, (struct sockaddr *)&add2, &addrlen);[m
+ 	if(new2) ;[m
+ 	else {[m
+[36m@@ -110,7 +113,7 @@[m [mvoid create_sock(int port, int port2){[m
+ 		printf("ERROR : error connecting\n");[m
+ 		exit(0);	[m
+ 	}[m
+[31m-	[m
+[32m+[m	[32m/*[m
+ 	addrlen = sizeof(add);[m
+ 	new5 = accept(sock, (struct sockaddr *)&add, &addrlen);[m
+ 	if(new5) printf("Conectador jugador 3 Equipo derecho\n");[m
+[36m@@ -235,6 +238,7 @@[m [mvoid create_sock(int port, int port2){[m
+ 	mensaje = malloc(3);[m
+ 	strcpy(mensaje, Eq_Derecho);[m
+ 	strcat(mensaje, jugador);[m
+[32m+[m	[32mprintf("desadsar3rewrwe");[m
+ [m
+ 	if(send(new1, mensaje, 2, 0) == -1){[m
+ 		perror("ERROR!\n");[m
+[36m@@ -249,7 +253,7 @@[m [mvoid create_sock(int port, int port2){[m
+ 		perror("ERROR!\n");[m
+ 		close(new3);[m
+ 		exit(0);	[m
+[31m-	}[m
+[32m+[m	[32m}/*[m
+ 	jugador = "3";[m
+ 	strcpy(mensaje, Eq_Derecho);[m
+ 	strcat(mensaje, jugador);[m
+[36m@@ -315,30 +319,37 @@[m [mvoid create_sock(int port, int port2){[m
+ 		exit(0);	[m
+ 	}[m
+ 	* */[m
+[32m+[m	[32mprintf("dasdasd");[m
+ [m
+ }[m
+[31m-/*[m
+[32m+[m
+ void *threadFuncd1(void *arg){[m
+ 	while(1){[m
+[31m-		[m
+[32m+[m		[32mchar msg[sizeof(int)]={0};[m
+ 		if(!th) usleep(500);[m
+[31m-		char *msg = (char *)malloc(sizeof(char) * 4);[m
+[31m-		int cc = recv(new2, msg, 4, 0);[m
+[31m-		struct play *p = (struct play *)msg;[m
+[31m-		rh1 = p -> x;[m
+[31m-		free(msg);[m
+[32m+[m		[32m//char *msg = (char *)malloc(sizeof(char) * 4);[m
+[32m+[m		[32mint cc = recv(new2, msg, sizeof(int), 0);[m
+[32m+[m		[32mfutbol.rh1=atoi(msg);[m
+[32m+[m		[32mprintf("valor rh1: %d", futbol.rh1);[m
+[32m+[m		[32m//= (int)p -> x;[m
+[32m+[m		[32m//printf("este es rh1 : %d", rh1);[m
+[32m+[m		[32m//free(msg);[m
+ 	}[m
+ }[m
+ void *threadFuncd2(void *arg){[m
+ 	while(1){	[m
+ 		if(!th) usleep(500);	[m
+[31m-		char *msg = (char *)malloc(sizeof(char) * 4);[m
+[31m-		int cc = recv(new4, msg, 4, 0);[m
+[31m-		struct play *p = (struct play *)msg;[m
+[31m-		rh2 = p -> x;[m
+[31m-		free(msg);[m
+[32m+[m		[32mchar msg[sizeof(int)]={0};[m
+[32m+[m		[32mif(recv(new4, msg, sizeof(int), 0)==-1)[m
+[32m+[m		[32m{[m
+[32m+[m			[32mperror("ERROR!\n");[m
+[32m+[m			[32mclose(new2);[m
+[32m+[m		[32m}[m
+[32m+[m		[32mfutbol.rh2=atoi(msg);[m
+[32m+[m		[32mprintf("valor rh2: %d", futbol.rh2);[m
+ 	}[m
+ }[m
+[32m+[m[32m/*[m
+ void *threadFuncd3(void *arg){[m
+ 	while(1){[m
+ 		[m
+[36m@@ -424,24 +435,41 @@[m [mvoid *threadFuncl5(void *arg){[m
+ }[m
+ */[m
+ void sendd(){[m
+[31m-	char *buff = (char *)malloc(sizeof(char) * 12);[m
+[32m+[m	[32mchar msg [sizeof(struct Juego)]={0};[m
+[32m+[m	[32mmemcpy(msg, &futbol, sizeof(futbol));[m
+[32m+[m	[32m/*char *buff = malloc(sizeof(char) * 56);[m
+ 	struct ball *bb = (struct ball *)buff;[m
+ 	bb -> x = b -> x;[m
+ 	bb -> y = b -> y;[m
+[32m+[m	[32mbb -> M_L = b -> M_L;[m
+[32m+[m	[32mbb -> M_R = b -> M_R;[m
+[32m+[m	[32mbb -> lh1 = b -> lh1;[m
+[32m+[m	[32mbb -> lh2 = b -> lh2;[m
+[32m+[m	[32mbb -> lh3 = b -> lh3;[m
+[32m+[m	[32mbb -> lh4 = b -> lh4;[m
+[32m+[m	[32mbb -> lh5 = b -> lh5;[m
+[32m+[m	[32mbb -> rh1 = 0;[m
+[32m+[m	[32mbb -> rh2 = b -> rh2;[m
+[32m+[m	[32mbb -> rh3 = b -> rh3;[m
+[32m+[m	[32mbb -> rh4 = b -> rh4;[m
+[32m+[m	[32mbb -> rh5 = b -> rh5;[m
+ 	//bb -> ra = rh1;[m
+[31m-	printf("\n x: %d	y: %d", bb->x, bb->y);[m
+[31m-	printf("\ndatos %s\n", buff);[m
+[31m-	if(send(new1, buff, 8, 0) == -1){[m
+[32m+[m	[32m//printf("\n x: %d	y: %d", bb->x, bb->y);[m
+[32m+[m	[32m//printf("\n M_L: %d	M_R: %d", bb->M_L, bb->M_R);[m
+[32m+[m	[32m//printf("\n rh1: %d", (int)b->rh1);[m
+[32m+[m	[32m//printf("\ndatos %s\n", buff);[m
+[32m+[m	[32m* */[m
+[32m+[m	[32mif(send(new1, msg, sizeof(futbol), 0) == -1){[m
+ 		perror("ERROR!\n");[m
+ 		close(new1);[m
+ 		exit(0);	[m
+ 	}/*[m
+[31m-	bb -> ra = rh2;[m
+[31m-	if(send(new3, buff, 12, 0) == -1){[m
+[32m+[m	[32mbb -> ra = rh2;*/[m
+[32m+[m	[32mif(send(new3, msg, sizeof(futbol), 0) == -1){[m
+ 		perror("ERROR!\n");[m
+ 		close(new3);[m
+ 		exit(0);	[m
+[31m-	}[m
+[32m+[m	[32m}/*[m
+ 	bb -> ra = rh3;[m
+ 	if(send(new5, buff, 12, 0) == -1){[m
+ 		perror("ERROR!\n");[m
+[36m@@ -492,9 +520,9 @@[m [mvoid sendd(){[m
+ 		exit(0);	[m
+ 	}[m
+ 	*/[m
+[31m-	free(buff);[m
+[32m+[m	[32m//free(buff);[m
+ 	char *fla = (char *)malloc(sizeof(char) * 2);[m
+[31m-	recv(new1, fla, 2, 0);[m
+[32m+[m	[32mint cc=recv(new1, fla, 2, 0);[m
+ 	/*[m
+ 	recv(new3, fla, 2, 0);[m
+ 	recv(new5, fla, 2, 0);[m
+[36m@@ -512,35 +540,48 @@[m [mvoid move(){[m
+ 		i--;[m
+ 		return;	[m
+ 	}[m
+[31m-	if(b -> y + y*incy < -height || b -> y + y*incy > height){[m
+[31m-		y = -1*y;[m
+[32m+[m	[32mif(futbol.y + futbol.y*incy < -height || futbol.y + futbol.y*incy > height){[m
+[32m+[m		[32mfutbol.y = -1*futbol.y;[m
+ 		srand(time(NULL));[m
+[31m-		incy = rand() % (20-15+1)+15 ;[m
+[31m-		b -> y += y*incy;	[m
+[31m-	}else b -> y += y*incy;[m
+[31m-	if(b -> x + x*incx < -width && b -> y + y*incy < (height)-190 && b -> y + y*incy > -(height)+210){[m
+[32m+[m		[32mincy = rand() % (35+1-15)+15 ;[m
+[32m+[m		[32mfutbol.y += futbol.y*incy;[m[41m	[m
+[32m+[m	[32m}else futbol.y += futbol.y*incy;[m
+[32m+[m	[32mif(futbol.x + futbol.x*incx < -width && futbol.y + futbol.y*incy < (height)-190 && futbol.y + futbol.y*incy > -(height)+210){[m
+ 		th = 0;[m
+ 		usleep(500);/*[m
+[31m-		if(b -> y >= lh5 - 10 && b -> y <= lh5 + 10){[m
+[32m+[m		[32mif(futbol.y >= lh5 - 10 && futbol.y <= lh5 + 10){[m
+ 			x = -1*x;[m
+ 			srand(time(NULL));[m
+ 			incx = rand() % 3 + 1;[m
+ 			if(incx == incy)[m
+ 			if(incx == 3) incx = 1;[m
+ 			else incx++;[m
+[31m-			b -> x += x*incx;[m
+[32m+[m			[32mfutbol.x += x*incx;[m
+ 		}else{*/[m
+[31m-			rmark++;[m
+[31m-			b -> x = 0;[m
+[31m-			b -> y = 0;[m
+[31m-			incx = 15;[m
+[31m-			incy = 20;	[m
+[32m+[m			[32mfutbol.M_R++;[m
+[32m+[m			[32mfutbol.x = 0;[m
+[32m+[m			[32mfutbol.y = 0;[m
+[32m+[m			[32msrand(time(NULL));[m
+[32m+[m			[32mincx = 15 ;[m
+[32m+[m			[32msrand(time(NULL));[m
+[32m+[m			[32mincy = rand() % (2) ;[m
+[32m+[m			[32mif (incy == 1){[m
+[32m+[m				[32msrand(time(NULL));[m
+[32m+[m				[32mincy = -(rand() % (35+1-15)+15) ;[m
+[32m+[m			[32m}[m
+[32m+[m			[32melse[m
+[32m+[m			[32m{[m
+[32m+[m				[32msrand(time(NULL));[m
+[32m+[m				[32mincy = rand() % (35+1-15)+15 ;[m
+[32m+[m			[32m}[m
+[32m+[m			[32m//incx = 15;[m
+[32m+[m			[32m//incy = 20;[m[41m	[m
+ 			i = 3;[m
+ 		}[m
+ 	/*[m
+[31m-	else if( b -> x + x*incx > ((6*(((-width/2)-10)/8))+15))[m
+[32m+[m	[32melse if( futbol.x + x*incx > ((6*(((-width/2)-10)/8))+15))[m
+ 	{[m
+[31m-		if(b -> y >= lh5 - 10 && b -> y <= lh5 + 10){[m
+[32m+[m		[32mif(futbol.y >= lh5 - 10 && futbol.y <= lh5 + 10){[m
+ 			x = -1*x;[m
+ 			srand(time(NULL));[m
+ 			incx = rand() % 3 + 1;[m
+[36m@@ -549,12 +590,12 @@[m [mvoid move(){[m
+ 				if(incx == 3) incx = 1;[m
+ 				else incx++;[m
+ 			}[m
+[31m-			b -> x += x*incx;[m
+[32m+[m			[32mfutbol.x += x*incx;[m
+ 		}[m
+ 	}	[m
+[31m-	else if( b -> x + x*incx > ((6*(((width/2)-10)/8))-15))[m
+[32m+[m	[32melse if( futbol.x + x*incx > ((6*(((width/2)-10)/8))-15))[m
+ 	{[m
+[31m-		if(b -> y >= rh5 - 10 && b -> y <= rh5 + 10){[m
+[32m+[m		[32mif(futbol.y >= rh5 - 10 && futbol.y <= rh5 + 10){[m
+ 			x = -1*x;[m
+ 			srand(time(NULL));[m
+ 			incx = rand() % 3 + 1;[m
+[36m@@ -563,48 +604,62 @@[m [mvoid move(){[m
+ 				if(incx == 3) incx = 1;[m
+ 				else incx++;[m
+ 			}[m
+[31m-			b -> x += x*incx;[m
+[32m+[m			[32mfutbol.x += x*incx;[m
+ 		}[m
+ 	}[m
+ 	* */[m
+[31m-	else if( b -> x + x*incx > width && b -> y + y*incy < (height)-190 && b -> y + y*incy > -(height)+210){[m
+[32m+[m	[32melse if( futbol.x + futbol.x*incx > width && futbol.y + futbol.y*incy < (height)-190 && futbol.y + futbol.y*incy > -(height)+210){[m
+ 		th = 1;[m
+ 		usleep(500);	[m
+[31m-		/*if(b -> y >= rx - 1 && b -> y <= rx + 7){[m
+[32m+[m		[32m/*if(futbol.y >= rx - 1 && futbol.y <= rx + 7){[m
+ 			x = -1*x;[m
+ 			srand(time(NULL));[m
+ 			incx = rand() % 3 + 1;[m
+ 			if(incx == incy)[m
+ 			if(incx == 3) incx = 1;[m
+ 			else incx++;[m
+[31m-			b -> x += x*incx;		[m
+[32m+[m			[32mfutbol.x += x*incx;[m[41m		[m
+ 		}else{*/[m
+[31m-			lmark++;[m
+[31m-			b -> x = 0;[m
+[31m-			b -> y = 0;[m
+[31m-			incx = -15;[m
+[31m-			incy = 20;	[m
+[32m+[m			[32mfutbol.M_L++;[m
+[32m+[m			[32mfutbol.x = 0;[m
+[32m+[m			[32mfutbol.y = 0;[m
+[32m+[m			[32msrand(time(NULL));[m
+[32m+[m			[32mincx = -15 ;[m
+[32m+[m			[32msrand(time(NULL));[m
+[32m+[m			[32mincy = rand() % (2) ;[m
+[32m+[m			[32mif (incy == 1){[m
+[32m+[m				[32msrand(time(NULL));[m
+[32m+[m				[32mincy = -(rand() % (35+1-15)+15) ;[m
+[32m+[m			[32m}[m
+[32m+[m			[32melse[m
+[32m+[m			[32m{[m
+[32m+[m				[32msrand(time(NULL));[m
+[32m+[m				[32mincy = rand() % (35+1-15)+15;[m
+[32m+[m			[32m}[m
+[32m+[m			[32m//incx = -15;[m
+[32m+[m			[32m//incy = 20;[m[41m	[m
+ 			i = 3;					[m
+ 		}[m
+[31m-	else if(b -> x + x*incx < -width || b -> x + x*incx > width)[m
+[32m+[m	[32melse if(futbol.x + futbol.x*incx < -width || futbol.x + futbol.x*incx > width)[m
+ 	{[m
+[31m-		x = -1*x;[m
+[32m+[m		[32mfutbol.x = -1*futbol.x;[m
+ 		srand(time(NULL));[m
+[31m-		incx = rand() % (20-15+1)+15 ;[m
+[31m-		b -> x += x*incx;[m
+[32m+[m		[32mincx = rand() % (35) ;[m
+[32m+[m		[32mfutbol.x += futbol.x*incx;[m
+ 		[m
+ 	}[m
+[31m-	else b -> x += x*incx;[m
+[32m+[m	[32melse futbol.x += futbol.x*incx;[m
+ 	[m
+ 	if(lmark >= 4){[m
+[31m-		b -> x = 540;[m
+[32m+[m		[32mfutbol.x = 540;[m
+ 		printf("Left side Won!\n\n");[m
+ 		sendd();[m
+ 	}else if(rmark >= 4){[m
+[31m-		b -> x = 550;[m
+[32m+[m		[32mfutbol.x = 550;[m
+ 		printf("Right side Won!\n\n");[m
+ 		sendd();[m
+ 	}[m
+[32m+[m[32m//	printf("\n move rh1: %d", (int)b->rh1);[m
+ 	[m
+ }[m
+ [m
+[36m@@ -612,34 +667,38 @@[m [mint main(){[m
+ 	printf("\n\n------------Pong Game Server--------------\n\n");[m
+ 	create_sock(9012, 9013);[m
+ 	[m
+[31m-	b = malloc(sizeof(struct ball *));[m
+[31m-	b -> x = 0;[m
+[31m-	b -> y = 0;[m
+[32m+[m	[32mfutbol.x=0;[m
+[32m+[m	[32mfutbol.y=0;[m[41m [m
+[32m+[m	[32mfutbol.M_L=0;[m
+[32m+[m	[32mfutbol.M_R=0;[m
+[32m+[m	[32mfutbol.lh1=0;[m
+[32m+[m	[32mfutbol.lh2=0;[m
+[32m+[m	[32mfutbol.lh3=0;[m
+[32m+[m	[32mfutbol.lh4=0;[m
+[32m+[m	[32mfutbol.lh5=0;[m
+[32m+[m	[32mfutbol.rh1=0;[m
+[32m+[m	[32mfutbol.rh2=0;[m
+[32m+[m	[32mfutbol.rh3=0;[m
+[32m+[m	[32mfutbol.rh4=0;[m
+[32m+[m	[32mfutbol.rh5=0;[m
+ [m
+ 	srand(time(NULL));[m
+[31m-	incx = rand() % (20-15+1)+15 ;[m
+[32m+[m	[32mincx = 15 ;[m
+ 	srand(time(NULL));[m
+[31m-	incy = rand() % (20-15+1)+15 ;[m
+[31m-/*[m
+[31m-	incx = 20;[m
+[31m-	incy = 15;[m
+[31m-	/*[m
+[31m-	pthread_t pth, pth2;[m
+[32m+[m	[32mincy = rand() % (35+1-15)+15;[m
+ [m
+[31m-	pthread_create(&pth, NULL, threadFunc, "...");[m
+[31m-	pthread_create(&pth2, NULL, threadFunc2, "...");[m
+[31m-	* */[m
+ 	while(1){[m
+ 		move();[m
+[31m-		//printf("pos x: %d	pos y: %d", x,y);[m
+[32m+[m		[32mprintf("x: %d, y: %d", futbol.x, futbol.y);[m
+ 		sendd();[m
+ 		usleep(500);[m
+ 	}[m
+[31m-/*	[m
+[31m-	pthread_t pthl1, pthl2, pthl3, pthl4, pthl5, pthd1, pthd2, pthd3, pthd4, pthd5;[m
+[32m+[m[41m	[m
+[32m+[m	[32mpthread_t pthl1, pthl2;//, pthl3, pthl4, pthl5, pthd1, pthd2, pthd3, pthd4, pthd5;[m
+ [m
+[31m-	pthread_create(&pthl1, NULL, threadFuncl1, "...");[m
+[31m-	pthread_create(&pthl2, NULL, threadFuncl2, "...");[m
+[32m+[m	[32mpthread_create(&pthl1, NULL, threadFuncd1, "...");[m
+[32m+[m	[32mpthread_create(&pthl2, NULL, threadFuncd2, "...");[m
+[32m+[m	[32m/*[m
+ 	pthread_create(&pthl3, NULL, threadFuncl3, "...");[m
+ 	pthread_create(&pthl4, NULL, threadFuncl4, "...");[m
+ 	pthread_create(&pthl5, NULL, threadFuncl5, "...");[m
+[36m@@ -650,10 +709,8 @@[m [mint main(){[m
+ 	pthread_create(&pthd5, NULL, threadFuncd5, "...");[m
+ 	* */[m
+ 	close(new1);[m
+[31m-	/*[m
+ 	close(new2);[m
+ 	close(new3);[m
+ 	close(new4);[m
+[31m-	* */[m
+ 	return 0;[m
+ }[m

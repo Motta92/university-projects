@@ -1,0 +1,11 @@
+
+#Author :Tharindra Galahena
+#Project:pong using openGL and c
+#Date   :29/01/2012
+
+CC    = gcc
+FILES = server.c
+FLAGS = -lpthread
+
+all:	
+	$(CC) -o server $(FILES) $(FLAGS)

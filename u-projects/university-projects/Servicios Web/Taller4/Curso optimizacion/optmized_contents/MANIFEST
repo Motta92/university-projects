@@ -1,0 +1,13 @@
+This zip file contains optimized resources for http://motta92.github.io/Motz/. The optimized resources are listed below in the format of: 
+filename: url
+
+Note: We only include up to 10 MB of optimized contents. If the
+optimized contents of your page are larger than 10 MB, we list them in
+this file too, with 'NOT INCLUDED' to indicate those URLs require
+further optimization.
+
+css/style.css: http://motta92.github.io/Motz/css/style.css
+css/print.css: http://motta92.github.io/Motz/css/print.css
+js/perfmatters.js: http://motta92.github.io/Motz/js/perfmatters.js
+image/profilepic.jpg: http://motta92.github.io/Motz/img/profilepic.jpg
+image/pizzeria.jpg: http://motta92.github.io/Motz/views/images/pizzeria.jpg

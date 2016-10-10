@@ -1,0 +1,54 @@
+-- Abrir consola interactiva --
+
+rails console
+
+-- Iniciar servidor rails --
+
+rails server
+
+-- Iniciar un proyecto nuevo --
+
+rails new <algo> --> crear nueva carpeta
+	bundle install --> comando para descargar librerias del gem que necesita
+
+-- Crear un controlador --
+
+rails generate controller Todos index --> crear controller y su vista asociada
+
+
+-- Generar modelos y comandos adicionales --
+
+--> <algo> tiene que ir en mayuscula, la inicial
+rails generate model <algo> <campos>:<tipoCampo> --> Crea el modelo
+
+--> migration es la parte fisica, donde se almacena la tabla relacionada al modelo creada que es la parte logica de la base de datos
+
+rake db:migrate --> Crea la tabla
+rake db:rollback --> Hacer rollback a la tabla
+
+-- Manipular elementos en la consola interactiva --
+
+t=<objeto>.new
+t.<campo>= <algo>
+t.save --> guardar en la base de datos
+
+-- ver rutas habilitadas en la aplicacion --
+
+rails routes
+match "todos/add" => "todos#add", :via => :post # via es para especificar el metodo post
+
+rails siempre busca la vista asociada a un metodo del controlador, por lo tanto si no se quiere hacer una redireccion a dicha vista, hay que especificarlo
+
+redirect_to <index_path> --> asi se debe especificar en el controlador
+
+
+-- Validar campos en el modelo --
+
+validates :todo_item, :presence => true --> Especifica que el campo no puede ser null
+
+
+-- IMPORTANTE --
+
+investigar diferencia entre los helper tag y for
+
+Para generar automaticamente las funciones basicas es necesario hacer un scafold

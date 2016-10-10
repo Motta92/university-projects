@@ -1,0 +1,16 @@
+
+
+#logo{
+	padding: 20px 8px;
+	clear: both;
+	/*overflow: auto;*/
+}
+
+#title_wrapper{
+	background-color: yellow;
+	/*margin: 80px 1px;*/
+}
+
+#mainText{
+	padding: 20px;	
+}
